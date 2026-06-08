@@ -4,102 +4,785 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Best Friend Day — Beyond Time</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&family=Space+Mono:ital@0;1&display=swap" rel="stylesheet">
 <style>
-body{
-    margin:0;
-    font-family:Arial,sans-serif;
-    background:#020818;
-    color:white;
-    overflow-x:hidden;
-}
-.hero{
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-    text-align:center;
-    background:radial-gradient(circle at center,#0b1f4d,#020818);
-}
-h1{
-    font-size:clamp(3rem,10vw,7rem);
-    margin:0;
-}
-.cyan{color:#00f5ff;}
-.pink{color:#ff2d78;}
-.btn{
-    padding:16px 32px;
-    border:1px solid #00f5ff;
-    color:#00f5ff;
-    text-decoration:none;
-    border-radius:8px;
-}
-section{padding:80px 20px;max-width:1100px;margin:auto;}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;}
-.card{
-    padding:24px;
-    border:1px solid rgba(0,245,255,.2);
-    border-radius:12px;
-    background:rgba(255,255,255,.03);
-}
-button{
-    padding:16px 32px;
-    border:none;
-    border-radius:10px;
-    cursor:pointer;
-}
-</style>
-</head>
-<body>
+  :root {
+    --cyan: #00f5ff;
+    --pink: #ff2d78;
+    --gold: #ffd700;
+    --deep: #020818;
+    --mid: #060e2b;
+    --panel: rgba(0,245,255,0.04);
+    --border: rgba(0,245,255,0.15);
+    --glow-cyan: 0 0 20px rgba(0,245,255,0.6), 0 0 60px rgba(0,245,255,0.2);
+    --glow-pink: 0 0 20px rgba(255,45,120,0.6), 0 0 60px rgba(255,45,120,0.2);
+  }
 
-<div class="hero">
-    <p>JUNE 08 · BEST FRIEND DAY</p>
-    <h1><span class="cyan">BEST</span> <span class="pink">FRIEND</span></h1>
-    <h2>∞ DAY ∞</h2>
-    <a class="btn" href="#pledge">Celebrate Now</a>
-</div>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-<section>
-    <h2>Friendship Metrics</h2>
-    <div class="grid">
-        <div class="card"><h3>🌍 8.1B+</h3><p>Friends On Earth</p></div>
-        <div class="card"><h3>💬 4</h3><p>True Best Friends (avg)</p></div>
-        <div class="card"><h3>⚡ 200</h3><p>Hours To Form Deep Bond</p></div>
-        <div class="card"><h3>∞ 100%</h3><p>Worth Celebrating</p></div>
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--deep);
+    color: #c8e8ff;
+    font-family: 'Rajdhani', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* ── CUSTOM CURSOR ── */
+  #cursor {
+    width: 12px; height: 12px;
+    background: var(--cyan);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none; z-index: 9999;
+    transform: translate(-50%,-50%);
+    transition: transform .1s, background .2s;
+    box-shadow: var(--glow-cyan);
+  }
+  #cursor-ring {
+    width: 36px; height: 36px;
+    border: 1px solid rgba(0,245,255,0.5);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none; z-index: 9998;
+    transform: translate(-50%,-50%);
+    transition: transform .25s ease, width .2s, height .2s;
+  }
+
+  /* ── STAR CANVAS ── */
+  #stars-canvas {
+    position: fixed; inset: 0;
+    z-index: 0; pointer-events: none;
+  }
+
+  /* ── GRID OVERLAY ── */
+  .grid-overlay {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 60px;
+    background: linear-gradient(180deg, rgba(2,8,24,0.95) 0%, transparent 100%);
+    backdrop-filter: blur(4px);
+  }
+  .nav-logo {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900; font-size: 1rem;
+    color: var(--cyan);
+    letter-spacing: 0.3em;
+    text-shadow: var(--glow-cyan);
+  }
+  .nav-links { display: flex; gap: 40px; list-style: none; }
+  .nav-links a {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem; color: rgba(200,232,255,0.6);
+    text-decoration: none; letter-spacing: 0.2em;
+    text-transform: uppercase;
+    transition: color .3s;
+    position: relative;
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: -4px; left: 0; right: 0;
+    height: 1px; background: var(--cyan);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform .3s;
+  }
+  .nav-links a:hover { color: var(--cyan); }
+  .nav-links a:hover::after { transform: scaleX(1); }
+
+  /* ── HERO ── */
+  #hero {
+    position: relative; z-index: 2;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 120px 40px 80px;
+    overflow: hidden;
+  }
+
+  .hero-date {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 0.4em;
+    color: var(--cyan); opacity: 0.7;
+    margin-bottom: 24px;
+    animation: fadeSlideUp 1s 0.2s both;
+  }
+
+  .hero-title {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: clamp(3rem, 10vw, 8rem);
+    line-height: 0.9;
+    margin-bottom: 16px;
+    animation: fadeSlideUp 1s 0.4s both;
+  }
+  .hero-title span.line1 {
+    display: block;
+    background: linear-gradient(135deg, #ffffff 0%, var(--cyan) 50%, #ffffff 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 30px rgba(0,245,255,0.4));
+  }
+  .hero-title span.line2 {
+    display: block;
+    background: linear-gradient(135deg, var(--pink) 0%, var(--gold) 50%, var(--pink) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 30px rgba(255,45,120,0.4));
+  }
+
+  .hero-sub {
+    font-size: 1.2rem; font-weight: 300;
+    color: rgba(200,232,255,0.6);
+    letter-spacing: 0.15em;
+    max-width: 500px;
+    margin: 0 auto 48px;
+    animation: fadeSlideUp 1s 0.6s both;
+  }
+
+  .hero-cta {
+    display: inline-flex; align-items: center; gap: 12px;
+    padding: 16px 40px;
+    border: 1px solid var(--cyan);
+    background: rgba(0,245,255,0.06);
+    color: var(--cyan);
+    font-family: 'Orbitron', monospace;
+    font-size: 0.75rem; font-weight: 700;
+    letter-spacing: 0.3em; text-transform: uppercase;
+    text-decoration: none;
+    position: relative; overflow: hidden;
+    cursor: none;
+    animation: fadeSlideUp 1s 0.8s both;
+    transition: background .3s, box-shadow .3s;
+  }
+  .hero-cta::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, var(--cyan), var(--pink));
+    opacity: 0; transition: opacity .3s;
+  }
+  .hero-cta:hover { box-shadow: var(--glow-cyan); background: rgba(0,245,255,0.15); }
+  .hero-cta:hover::before { opacity: 0.1; }
+  .hero-cta span { position: relative; z-index: 1; }
+
+  /* Floating stickers hero */
+  .sticker {
+    position: absolute; pointer-events: none;
+    user-select: none; font-size: 2rem;
+    animation: float linear infinite;
+    opacity: 0.7;
+  }
+
+  .orb {
+    position: absolute; border-radius: 50%; pointer-events: none;
+    filter: blur(80px); opacity: 0.15;
+  }
+  .orb-1 { width: 600px; height: 600px; background: var(--cyan); top: -200px; left: -200px; animation: orbDrift 20s ease-in-out infinite; }
+  .orb-2 { width: 400px; height: 400px; background: var(--pink); bottom: -100px; right: -100px; animation: orbDrift 15s ease-in-out infinite reverse; }
+  .orb-3 { width: 300px; height: 300px; background: var(--gold); top: 40%; left: 60%; animation: orbDrift 18s ease-in-out infinite 5s; }
+
+  /* ── SECTION BASE ── */
+  section {
+    position: relative; z-index: 2;
+    padding: 100px 60px;
+  }
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.5em;
+    color: var(--cyan); opacity: 0.6;
+    text-transform: uppercase; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .section-label::before {
+    content: ''; flex: 0 0 40px; height: 1px;
+    background: var(--cyan); opacity: 0.4;
+  }
+  .section-title {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 900; line-height: 1.1;
+    margin-bottom: 24px;
+  }
+
+  /* ── FRIENDSHIP STATS ── */
+  #stats {
+    background: linear-gradient(180deg, var(--deep) 0%, var(--mid) 50%, var(--deep) 100%);
+  }
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px;
+    margin-top: 60px;
+    border: 1px solid var(--border);
+  }
+  .stat-card {
+    padding: 48px 32px;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    text-align: center;
+    position: relative; overflow: hidden;
+    transition: background .3s;
+  }
+  .stat-card:last-child { border-right: none; }
+  .stat-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 2px; background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    transform: scaleX(0); transition: transform .5s;
+  }
+  .stat-card:hover { background: rgba(0,245,255,0.08); }
+  .stat-card:hover::before { transform: scaleX(1); }
+  .stat-number {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(2.5rem, 4vw, 3.5rem);
+    font-weight: 900; color: var(--cyan);
+    text-shadow: var(--glow-cyan);
+    display: block; margin-bottom: 8px;
+  }
+  .stat-label {
+    font-size: 0.85rem; letter-spacing: 0.2em;
+    color: rgba(200,232,255,0.5);
+    text-transform: uppercase;
+  }
+  .stat-icon { font-size: 2rem; margin-bottom: 16px; display: block; }
+
+  /* ── QUOTES ── */
+  #quotes {
+    overflow: hidden;
+    padding: 100px 0;
+  }
+  .quotes-header { padding: 0 60px; margin-bottom: 60px; }
+  .quotes-track-wrap {
+    position: relative;
+    overflow: hidden;
+  }
+  .quotes-track {
+    display: flex; gap: 24px;
+    animation: scrollLeft 40s linear infinite;
+    width: max-content;
+  }
+  .quotes-track:hover { animation-play-state: paused; }
+  .quote-card {
+    flex: 0 0 380px;
+    padding: 40px 36px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--pink);
+    position: relative;
+    transition: transform .3s, border-color .3s;
+  }
+  .quote-card:hover { transform: translateY(-8px); border-color: var(--pink); box-shadow: var(--glow-pink); }
+  .quote-mark {
+    font-family: 'Orbitron', monospace;
+    font-size: 5rem; font-weight: 900;
+    color: var(--pink); opacity: 0.2;
+    position: absolute; top: 10px; right: 20px;
+    line-height: 1;
+  }
+  .quote-text {
+    font-size: 1rem; line-height: 1.7;
+    color: rgba(200,232,255,0.8);
+    font-style: italic; margin-bottom: 24px;
+    position: relative; z-index: 1;
+  }
+  .quote-author {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 0.2em;
+    color: var(--pink);
+  }
+
+  /* ── BOND CARDS ── */
+  #bonds {
+    background: var(--mid);
+  }
+  .bonds-intro { max-width: 600px; margin-bottom: 60px; }
+  .bonds-intro p {
+    font-size: 1.1rem; line-height: 1.8;
+    color: rgba(200,232,255,0.6);
+    font-weight: 300;
+  }
+  .bonds-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .bond-card {
+    padding: 48px 36px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    position: relative; overflow: hidden;
+    cursor: none;
+    transition: transform .4s cubic-bezier(.23,1,.32,1);
+    group: true;
+  }
+  .bond-card::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(0,245,255,0.08), rgba(255,45,120,0.08));
+    opacity: 0; transition: opacity .3s;
+  }
+  .bond-card:hover { transform: translateY(-12px); }
+  .bond-card:hover::after { opacity: 1; }
+  .bond-card:hover .bond-icon { transform: scale(1.2) rotate(10deg); }
+  .bond-icon {
+    font-size: 3rem; margin-bottom: 24px; display: block;
+    transition: transform .4s cubic-bezier(.23,1,.32,1);
+  }
+  .bond-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.9rem; font-weight: 700;
+    letter-spacing: 0.15em; color: #fff;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+  .bond-desc {
+    font-size: 0.9rem; line-height: 1.7;
+    color: rgba(200,232,255,0.5);
+    font-weight: 300;
+  }
+  .bond-num {
+    position: absolute; top: 24px; right: 28px;
+    font-family: 'Orbitron', monospace;
+    font-size: 3rem; font-weight: 900;
+    color: rgba(0,245,255,0.05);
+    line-height: 1;
+  }
+  .bond-line {
+    position: absolute; bottom: 0; left: 0;
+    height: 2px; width: 0;
+    background: linear-gradient(90deg, var(--cyan), var(--pink));
+    transition: width .5s cubic-bezier(.23,1,.32,1);
+  }
+  .bond-card:hover .bond-line { width: 100%; }
+
+  /* ── INTERACTIVE PLEDGE ── */
+  #pledge {
+    background: linear-gradient(135deg, var(--deep) 0%, #0a0020 50%, var(--deep) 100%);
+    text-align: center;
+    padding: 120px 60px;
+    position: relative; overflow: hidden;
+  }
+  #pledge::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(255,45,120,0.08) 0%, transparent 70%);
+  }
+  .pledge-title {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: 900; margin-bottom: 20px;
+    background: linear-gradient(135deg, #fff, var(--pink), var(--gold));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative; z-index: 1;
+  }
+  .pledge-sub {
+    font-size: 1.1rem; color: rgba(200,232,255,0.5);
+    margin-bottom: 60px; letter-spacing: 0.1em;
+    position: relative; z-index: 1;
+  }
+  .pledge-box {
+    max-width: 700px; margin: 0 auto;
+    background: var(--panel);
+    border: 1px solid rgba(255,45,120,0.3);
+    padding: 48px;
+    position: relative; z-index: 1;
+  }
+  .pledge-text {
+    font-size: 1.05rem; line-height: 2;
+    color: rgba(200,232,255,0.7);
+    font-style: italic; margin-bottom: 40px;
+    letter-spacing: 0.05em;
+  }
+  .pledge-text strong { color: var(--cyan); font-style: normal; }
+  .pledge-btn {
+    padding: 18px 56px;
+    background: linear-gradient(135deg, var(--pink), #a000ff);
+    border: none; color: #fff;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.8rem; font-weight: 700;
+    letter-spacing: 0.3em; text-transform: uppercase;
+    cursor: none; position: relative; overflow: hidden;
+    transition: transform .3s, box-shadow .3s;
+  }
+  .pledge-btn:hover { transform: scale(1.05); box-shadow: var(--glow-pink); }
+  .pledge-btn.pledged {
+    background: linear-gradient(135deg, #00c853, #00e5ff);
+    animation: pledgePulse 2s ease-in-out infinite;
+  }
+  .pledge-counter {
+    margin-top: 24px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 0.3em;
+    color: rgba(200,232,255,0.4);
+  }
+  .pledge-counter span { color: var(--cyan); font-size: 1rem; }
+
+  /* ── MEMORY GALLERY ── */
+  #gallery {
+    padding: 100px 60px;
+  }
+  .gallery-header { margin-bottom: 60px; }
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(2, 180px);
+    gap: 12px;
+  }
+  .gallery-item {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    position: relative; overflow: hidden;
+    cursor: none;
+    transition: transform .4s, box-shadow .4s;
+  }
+  .gallery-item:nth-child(1) { grid-column: span 2; grid-row: span 2; }
+  .gallery-item:nth-child(4) { grid-column: span 2; }
+  .gallery-item:nth-child(6) { grid-column: span 2; }
+  .gallery-item:hover { transform: scale(1.02); box-shadow: 0 0 40px rgba(0,245,255,0.2); }
+  .gallery-item-inner {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 12px;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(0,245,255,0.05), rgba(255,45,120,0.05));
+  }
+  .gallery-emoji { font-size: 3rem; }
+  .gallery-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem; letter-spacing: 0.3em;
+    color: rgba(200,232,255,0.4); text-transform: uppercase;
+    text-align: center;
+  }
+  .gallery-item:nth-child(1) .gallery-emoji { font-size: 5rem; }
+  .gallery-item:nth-child(1) .gallery-label { font-size: 0.75rem; }
+
+  /* Scan line hover effect */
+  .gallery-item::after {
+    content: ''; position: absolute;
+    top: -100%; left: 0; right: 0; height: 40%;
+    background: linear-gradient(180deg, transparent, rgba(0,245,255,0.08), transparent);
+    transition: top .6s;
+  }
+  .gallery-item:hover::after { top: 150%; }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative; z-index: 2;
+    background: var(--mid);
+    border-top: 1px solid var(--border);
+    padding: 80px 60px 40px;
+  }
+  .footer-top {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 60px; margin-bottom: 60px;
+  }
+  .footer-brand {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900; font-size: 1.5rem;
+    color: var(--cyan); text-shadow: var(--glow-cyan);
+    margin-bottom: 16px;
+  }
+  .footer-tagline {
+    font-size: 0.85rem; color: rgba(200,232,255,0.4);
+    line-height: 1.7; font-weight: 300;
+  }
+  .footer-col-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.4em;
+    color: var(--cyan); text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .footer-links { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .footer-links a {
+    font-size: 0.9rem; color: rgba(200,232,255,0.5);
+    text-decoration: none; transition: color .2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .footer-links a:hover { color: var(--cyan); }
+  .footer-links a::before { content: '→'; font-size: 0.7rem; opacity: 0.5; }
+  .footer-divider {
+    height: 1px; background: var(--border); margin-bottom: 40px;
+  }
+  .footer-bottom {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .footer-copy {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem; color: rgba(200,232,255,0.3);
+    letter-spacing: 0.2em;
+  }
+  .footer-badges { display: flex; gap: 16px; }
+  .footer-badge {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem; letter-spacing: 0.2em;
+    color: rgba(200,232,255,0.3);
+    transition: border-color .3s, color .3s;
+  }
+  .footer-badge:hover { border-color: var(--cyan); color: var(--cyan); }
+
+  /* ── FLOATING STICKERS (global) ── */
+  .floating-sticker {
+    position: fixed;
+    pointer-events: none;
+    z-index: 3;
+    font-size: 1.5rem;
+    opacity: 0;
+    transition: opacity .3s;
+  }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal {
+    opacity: 0; transform: translateY(40px);
+    transition: opacity .8s cubic-bezier(.23,1,.32,1), transform .8s cubic-bezier(.23,1,.32,1);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    33% { transform: translateY(-20px) rotate(5deg); }
+    66% { transform: translateY(-10px) rotate(-3deg); }
+  }
+  @keyframes orbDrift {
+    0%, 100% { transform: translate(0,0); }
+    25% { transform: translate(40px, -30px); }
+    50% { transform: translate(-20px, 50px); }
+    75% { transform: translate(-50px, -20px); }
+  }
+  @keyframes scrollLeft {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes pledgePulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(0,200,83,0.5); }
+    50% { box-shadow: 0 0 60px rgba(0,229,255,0.8); }
+  }
+  @keyframes scanPulse {
+    0%, 100% { opacity: 0.03; }
+    50% { opacity: 0.06; }
+  }
+  @keyframes countUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes glitch {
+    0%, 95%, 100% { clip-path: none; transform: none; }
+    96% { clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%); transform: translate(-2px, 2px); }
+    97% { clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%); transform: translate(2px, -1px); }
+    98% { clip-path: polygon(0 45%, 100% 45%, 100% 55%, 0 55%); transform: translate(-1px, 0); }
+  }
+  @keyframes neonBlink {
+    0%, 100% { text-shadow: var(--glow-cyan); }
+    50% { text-shadow: none; }
+  }
+          <span style="font-family:'Space Mono',monospace;font-size:0.65rem;color:rgba(200,232,255,0.4);">FRIENDSHIP BONDS: ACTIVE</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);"></div>
+          <span style="font-family:'Space Mono',monospace;font-size:0.65rem;color:rgba(200,232,255,0.4);">MEMORY ARCHIVE: ONLINE</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--pink);box-shadow:0 0 10px var(--pink);"></div>
+          <span style="font-family:'Space Mono',monospace;font-size:0.65rem;color:rgba(200,232,255,0.4);">PLEDGE ENGINE: RUNNING</span>
+        </div>
+      </div>
     </div>
-</section>
-
-<section id="pledge">
-    <h2>Take The Eternal Pledge</h2>
-    <p>I pledge to support, celebrate, and stand beside my friends through every chapter of life.</p>
-    <button id="pledgeBtn">TAKE THE PLEDGE</button>
-    <p><strong id="count">2,847,392</strong> friends pledged today</p>
-</section>
+  </div>
+  <div class="footer-divider"></div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2026 BEST FRIEND DAY · ALL TIMELINES RESERVED · ∞</div>
+    <div class="footer-badges">
+      <div class="footer-badge">FRIENDSHIP v∞.0</div>
+      <div class="footer-badge">EST. TIME: ALWAYS</div>
+      <div class="footer-badge">EXPIRY: NEVER</div>
+    </div>
+  </div>
+</footer>
 
 <script>
-let pledged = localStorage.getItem('pledged') === 'true';
-let count = Number(localStorage.getItem('pledgeCount') || 2847392);
+  // ── CURSOR ──
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  function animCursor() {
+    cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+    rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+    requestAnimationFrame(animCursor);
+  }
+  animCursor();
+  document.querySelectorAll('a, button, .bond-card, .stat-card, .gallery-item').forEach(el => {
+    el.addEventListener('mouseenter', () => { cursor.style.transform = 'translate(-50%,-50%) scale(2)'; ring.style.width = '60px'; ring.style.height = '60px'; });
+    el.addEventListener('mouseleave', () => { cursor.style.transform = 'translate(-50%,-50%) scale(1)'; ring.style.width = '36px'; ring.style.height = '36px'; });
+  });
 
-const btn = document.getElementById('pledgeBtn');
-const counter = document.getElementById('count');
-
-function updateUI(){
-    counter.textContent = count.toLocaleString();
-    if(pledged){
-        btn.textContent = '✓ PLEDGED — BOND ETERNAL';
+  // ── STAR CANVAS ──
+  const canvas = document.getElementById('stars-canvas');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    createStars();
+  }
+  function createStars() {
+    stars = [];
+    const count = Math.floor((canvas.width * canvas.height) / 4000);
+    for (let i = 0; i < count; i++) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.5,
+        o: Math.random() * 0.8 + 0.1,
+        s: Math.random() * 0.003 + 0.001,
+        phase: Math.random() * Math.PI * 2,
+        color: Math.random() < 0.05 ? '#00f5ff' : Math.random() < 0.05 ? '#ff2d78' : '#ffffff'
+      });
     }
-}
-updateUI();
+  }
+  let t = 0;
+  function drawStars() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    t += 0.01;
+    stars.forEach(s => {
+      const opacity = s.o * (0.6 + 0.4 * Math.sin(t * s.s * 100 + s.phase));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = s.color + Math.floor(opacity * 255).toString(16).padStart(2,'0');
+      ctx.fill();
+    });
+    requestAnimationFrame(drawStars);
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+  drawStars();
 
-btn.addEventListener('click',()=>{
-    if(pledged) return;
-    pledged = true;
-    count++;
-    localStorage.setItem('pledged','true');
-    localStorage.setItem('pledgeCount',count);
-    updateUI();
-});
+  // ── SCROLL REVEAL ──
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+  reveals.forEach(el => observer.observe(el));
+
+  // ── COUNT UP ANIMATION ──
+  function formatNumber(n) {
+    if (n >= 1e9) return (n/1e9).toFixed(1) + 'B+';
+    if (n >= 1e6) return (n/1e6).toFixed(1) + 'M+';
+    if (n >= 1e3) return (n/1e3).toFixed(1) + 'K+';
+    return n.toString();
+  }
+  const statObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting && !e.target.dataset.counted) {
+        e.target.dataset.counted = '1';
+        const target = parseInt(e.target.dataset.target);
+        const duration = 2000;
+        const start = Date.now();
+        function tick() {
+          const elapsed = Date.now() - start;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          const val = Math.floor(eased * target);
+          e.target.textContent = formatNumber(val);
+          if (progress < 1) requestAnimationFrame(tick);
+          else e.target.textContent = formatNumber(target);
+        }
+        tick();
+      }
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('.stat-number[data-target]').forEach(el => statObserver.observe(el));
+
+  // ── PLEDGE BUTTON ──
+  let pledged = false;
+  let pledgeCount = 2847392;
+  function takePledge() {
+    const btn = document.getElementById('pledgeBtn');
+    const counter = document.getElementById('pledgeCount');
+    if (!pledged) {
+      pledged = true;
+      btn.textContent = '✓ PLEDGED — BOND ETERNAL';
+      btn.classList.add('pledged');
+      pledgeCount++;
+      counter.textContent = pledgeCount.toLocaleString();
+      // Particle burst
+      for (let i = 0; i < 30; i++) {
+        createParticle(btn.getBoundingClientRect().left + btn.offsetWidth/2, btn.getBoundingClientRect().top + btn.offsetHeight/2);
+      }
+    }
+  }
+  function createParticle(x, y) {
+    const p = document.createElement('div');
+    const emojis = ['💖','⭐','✨','💫','🌟','💙','🎉'];
+    p.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    p.style.cssText = `position:fixed;left:${x}px;top:${y}px;font-size:${Math.random()*20+12}px;pointer-events:none;z-index:9999;transition:all ${Math.random()*1+0.5}s ease-out;transform:translate(-50%,-50%);`;
+    document.body.appendChild(p);
+    setTimeout(() => {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = Math.random() * 200 + 100;
+      p.style.left = (x + Math.cos(angle)*dist) + 'px';
+      p.style.top = (y + Math.sin(angle)*dist) + 'px';
+      p.style.opacity = '0';
+      p.style.transform = 'translate(-50%,-50%) scale(0)';
+    }, 10);
+    setTimeout(() => p.remove(), 2000);
+  }
+
+  // ── PARALLAX ──
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY;
+    document.querySelectorAll('.orb').forEach((orb, i) => {
+      const speed = [0.3, 0.5, 0.2][i] || 0.3;
+      orb.style.transform = `translateY(${scrollY * speed}px)`;
+    });
+  });
+
+  // ── SCAN LINE ANIMATION ──
+  const styleTag = document.createElement('style');
+  styleTag.textContent = `
+    @keyframes scanLine {
+      0% { top: 0; opacity: 0; }
+      5% { opacity: 1; }
+      95% { opacity: 1; }
+      100% { top: 100%; opacity: 0; }
+    }
+  `;
+  document.head.appendChild(styleTag);
+
+  // ── GLITCH ON LOGO ──
+  const logo = document.querySelector('.nav-logo');
+  setInterval(() => {
+    logo.style.animation = 'glitch 0.3s steps(1) forwards';
+    setTimeout(() => logo.style.animation = '', 300);
+  }, 8000);
+
+  // ── ACTIVE NAV LINK ON SCROLL ──
+  const sections = document.querySelectorAll('section[id], footer');
+  const navLinks = document.querySelectorAll('.nav-links a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 200) current = s.id || '';
+    });
+    navLinks.forEach(a => {
+      a.style.color = a.getAttribute('href') === '#'+current ? 'var(--cyan)' : '';
+    });
+  });
 </script>
-
 </body>
 </html>
+  
