@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Best Friend Day — Beyond the Stars</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Syne:wght@300;400;600&family=Space+Mono:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  :root {
+    --gold: #FFD700;
+    --gold2: #FFA500;
+    --cyan: #00F5FF;
+    --pink: #FF2D78;
+    --violet: #9B30FF;
+    --bg: #050510;
+    --bg2: #080820;
+    --glass: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.08);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* ── CUSTOM CURSOR ── */
+  #cursor {
+    position: fixed; width: 12px; height: 12px;
+    background: var(--cyan); border-radius: 50%;
+    pointer-events: none; z-index: 9999;
+    transform: translate(-50%,-50%);
+    transition: transform .1s, background .3s;
+    mix-blend-mode: difference;
+    left: -100px; top: -100px;
+  }
+  #cursor-trail {
+    position: fixed; width: 36px; height: 36px;
+    border: 1px solid rgba(0,245,255,.4); border-radius: 50%;
+    pointer-events: none; z-index: 9998;
+    transform: translate(-50%,-50%);
+    transition: left .15s ease, top .15s ease;
+    left: -100px; top: -100px;
+  }
+
+  /* ── CANVAS BG ── */
+  #bg-canvas {
+    position: fixed; inset: 0;
+    width: 100%; height: 100%;
+    z-index: 0; pointer-events: none;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: ''; position: fixed; inset: 0; z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; opacity: .5;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 1.2rem 3rem;
+    display: flex; align-items: center; justify-content: space-between;
+    backdrop-filter: blur(20px);
+    background: rgba(5,5,16,.6);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900; font-size: .9rem;
+    letter-spacing: .2em;
+    background: linear-gradient(90deg, var(--gold), var(--cyan));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+  .nav-links a {
+    text-decoration: none; color: rgba(255,255,255,.6);
+    font-size: .8rem; letter-spacing: .15em; text-transform: uppercase;
+    transition: color .3s;
+  }
+  .nav-links a:hover { color: var(--cyan); }
+  .nav-date {
+    font-family: 'Space Mono', monospace; font-size: .75rem;
+    color: rgba(255,255,255,.4); letter-spacing: .1em;
+  }
+
+  /* ── SECTIONS ── */
+  section { position: relative; z-index: 2; }
+
+  /* ── HERO ── */
+  #hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 8rem 2rem 4rem;
+    overflow: hidden;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: .6rem;
+    border: 1px solid rgba(255,215,0,.3);
+    background: rgba(255,215,0,.06);
+    padding: .4rem 1.2rem; border-radius: 100px;
+    font-size: .7rem; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 2rem;
+    animation: fadeInUp .8s both;
+  }
+  .hero-badge span { font-size: 1rem; }
+  .hero-title {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2.8rem, 8vw, 8rem);
+    line-height: 1;
+    letter-spacing: -.02em;
+    animation: fadeInUp .8s .1s both;
+  }
+  .hero-title .line1 {
+    background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,.7) 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    display: block;
+  }
+  .hero-title .line2 {
+    background: linear-gradient(135deg, var(--gold) 0%, var(--pink) 50%, var(--cyan) 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    display: block;
+    filter: drop-shadow(0 0 40px rgba(255,215,0,.4));
+    animation: shimmer 3s ease-in-out infinite alternate;
+  }
+  @keyframes shimmer {
+    from { filter: drop-shadow(0 0 30px rgba(255,215,0,.3)); }
+    to   { filter: drop-shadow(0 0 60px rgba(0,245,255,.5)); }
+  }
+  .hero-sub {
+    margin-top: 1.5rem;
+    font-size: clamp(.9rem, 2vw, 1.1rem);
+    color: rgba(255,255,255,.5); max-width: 520px;
+    line-height: 1.7; font-weight: 300;
+    animation: fadeInUp .8s .2s both;
+  }
+  .hero-cta {
+    margin-top: 3rem;
+    display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+    animation: fadeInUp .8s .3s both;
+  }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: .6rem;
+    padding: .9rem 2.4rem; border-radius: 100px;
+    background: linear-gradient(135deg, var(--gold), var(--pink));
+    color: #fff; font-weight: 600; font-size: .9rem;
+    letter-spacing: .1em; text-transform: uppercase;
+    text-decoration: none; border: none; cursor: none;
+    transition: transform .3s, box-shadow .3s;
+    box-shadow: 0 0 30px rgba(255,45,120,.4);
+  }
+  .btn-primary:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 0 50px rgba(255,45,120,.7);
+  }
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: .6rem;
+    padding: .9rem 2.4rem; border-radius: 100px;
+    border: 1px solid rgba(0,245,255,.4);
+    color: var(--cyan); background: rgba(0,245,255,.05);
+    font-weight: 600; font-size: .9rem;
+    letter-spacing: .1em; text-transform: uppercase;
+    text-decoration: none; cursor: none;
+    transition: transform .3s, background .3s, box-shadow .3s;
+  }
+  .btn-ghost:hover {
+    transform: translateY(-3px);
+    background: rgba(0,245,255,.12);
+    box-shadow: 0 0 30px rgba(0,245,255,.3);
+  }
+
+  /* Three.js hero canvas */
+  #hero-canvas {
+    position: absolute; inset: 0; z-index: -1;
+    width: 100%; height: 100%;
+  }
+
+  /* sticker floats */
+  .sticker {
+    position: absolute; pointer-events: none;
+    animation: floatSticker 6s ease-in-out infinite;
+    font-size: 2.5rem; filter: drop-shadow(0 0 12px rgba(255,215,0,.5));
+    z-index: 1;
+  }
+  @keyframes floatSticker {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    33% { transform: translateY(-18px) rotate(8deg); }
+    66% { transform: translateY(10px) rotate(-5deg); }
+  }
+  .s1 { top:15%; left:7%; animation-delay:0s; }
+  .s2 { top:20%; right:8%; animation-delay:1s; font-size:2rem; }
+  .s3 { bottom:25%; left:5%; animation-delay:2s; font-size:1.8rem; }
+  .s4 { bottom:20%; right:6%; animation-delay:.5s; }
+  .s5 { top:40%; left:3%; animation-delay:1.5s; font-size:1.5rem; }
+  .s6 { top:35%; right:4%; animation-delay:2.5s; font-size:2.2rem; }
+
+  /* scroll indicator */
+  .scroll-hint {
+    position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: .5rem;
+    color: rgba(255,255,255,.3); font-size: .7rem; letter-spacing: .2em;
+    text-transform: uppercase; animation: fadeInUp 1s .8s both;
+  }
+  .scroll-dot {
+    width: 1px; height: 50px;
+    background: linear-gradient(to bottom, transparent, var(--cyan));
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+  @keyframes scrollPulse {
+    0%,100% { opacity: .3; transform: scaleY(1); }
+    50% { opacity: 1; transform: scaleY(1.2); }
+  }
+
+  /* ── ORBIT SECTION ── */
+  #orbit {
+    padding: 8rem 2rem;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center;
+  }
+  .section-label {
+    font-family: 'Space Mono', monospace; font-size: .7rem;
+    letter-spacing: .3em; text-transform: uppercase;
+    color: var(--cyan); margin-bottom: 1rem;
+    opacity: 0; transform: translateY(20px);
+    transition: all .7s;
+  }
+  .section-label.visible { opacity: 1; transform: none; }
+  .section-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(1.8rem, 5vw, 3.5rem);
+    font-weight: 700; line-height: 1.1;
+    opacity: 0; transform: translateY(30px);
+    transition: all .7s .1s;
+  }
+  .section-title.visible { opacity: 1; transform: none; }
+  .section-title em {
+    font-style: normal;
+    background: linear-gradient(90deg, var(--gold), var(--pink));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
+  #orbit-canvas {
+    width: min(600px, 90vw); height: min(600px, 90vw);
+    margin: 3rem 0;
+    border-radius: 50%;
+    overflow: visible;
+  }
+
+  /* ── QUOTES SECTION ── */
+  #quotes {
+    padding: 6rem 2rem;
+    background: linear-gradient(180deg, transparent, rgba(155,48,255,.06) 50%, transparent);
+  }
+  .quotes-grid {
+    max-width: 1200px; margin: 4rem auto 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  .quote-card {
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 20px; padding: 2.5rem;
+    backdrop-filter: blur(20px);
+    position: relative; overflow: hidden;
+    transform-style: preserve-3d;
+    opacity: 0; transform: translateY(40px);
+    transition: opacity .6s, transform .6s, box-shadow .4s;
+  }
+  .quote-card.visible { opacity: 1; transform: translateY(0); }
+  .quote-card:hover {
+    box-shadow: 0 20px 60px rgba(0,0,0,.4), 0 0 30px rgba(0,245,255,.08);
+  }
+  .quote-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,215,0,.04), transparent 60%);
+    pointer-events: none;
+  }
+  .quote-accent {
+    font-size: 4rem; line-height: 1; margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--gold), var(--pink));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    font-family: 'Orbitron', sans-serif;
+  }
+  .quote-text {
+    font-size: 1.05rem; line-height: 1.7;
+    color: rgba(255,255,255,.8); font-weight: 300;
+    font-style: italic; margin-bottom: 1.5rem;
+  }
+  .quote-author {
+    font-family: 'Space Mono', monospace; font-size: .75rem;
+    color: var(--cyan); letter-spacing: .1em;
+  }
+  .quote-emoji {
+    position: absolute; top: 1.5rem; right: 1.5rem;
+    font-size: 1.5rem; opacity: .5;
+  }
+
+  /* card tilt effect */
+  .quote-card { cursor: default; }
+
+  /* ── MEMORY VAULT (3D CARDS) ── */
+  #vault {
+    padding: 8rem 2rem;
+    text-align: center;
+  }
+  .vault-grid {
+    max-width: 1100px; margin: 4rem auto 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    perspective: 1000px;
+  }
+  .vault-card {
+    height: 320px; perspective: 600px;
+    cursor: none;
+    opacity: 0; transform: scale(.9);
+    transition: opacity .6s, transform .6s;
+  }
+  .vault-card.visible { opacity: 1; transform: scale(1); }
+  .vault-card-inner {
+    width: 100%; height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform .7s cubic-bezier(.4,0,.2,1);
+  }
+  .vault-card:hover .vault-card-inner { transform: rotateY(180deg); }
+  .vault-card-front, .vault-card-back {
+    position: absolute; inset: 0;
+    backface-visibility: hidden;
+    border-radius: 20px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 2rem;
+    border: 1px solid var(--border);
+  }
+  .vault-card-front {
+    background: linear-gradient(135deg, var(--bg2), rgba(155,48,255,.15));
+  }
+  .vault-card-back {
+    background: linear-gradient(135deg, rgba(0,245,255,.08), rgba(255,45,120,.08));
+    transform: rotateY(180deg);
+  }
+  .vault-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+  .vault-title {
+    font-family: 'Orbitron', sans-serif; font-size: 1rem;
+    font-weight: 700; letter-spacing: .1em; margin-bottom: .5rem;
+  }
+  .vault-desc { font-size: .85rem; color: rgba(255,255,255,.5); line-height: 1.6; }
+  .vault-back-text {
+    font-size: 1rem; color: rgba(255,255,255,.8); line-height: 1.7;
+    font-style: italic; text-align: center;
+  }
+
+  /* ── TIMELINE ── */
+  #timeline {
+    padding: 8rem 2rem;
+    background: linear-gradient(180deg, transparent, rgba(0,245,255,.03) 50%, transparent);
+  }
+  .timeline-wrap {
+    max-width: 800px; margin: 4rem auto 0;
+    position: relative;
+  }
+  .timeline-line {
+    position: absolute; left: 50%; top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, var(--cyan), transparent);
+    transform: translateX(-50%);
+  }
+  .timeline-item {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 3rem; margin-bottom: 3rem;
+    opacity: 0;
+    transition: opacity .6s, transform .6s;
+  }
+  .timeline-item.visible { opacity: 1; transform: none !important; }
+  .timeline-item:nth-child(odd) { transform: translateX(-30px); }
+  .timeline-item:nth-child(even) { transform: translateX(30px); }
+  .timeline-item:nth-child(even) .tl-content { order: 2; text-align: left; }
+  .timeline-item:nth-child(even) .tl-spacer { order: 1; }
+  .tl-content {
+    text-align: right; padding: 1.5rem;
+    background: var(--glass); border: 1px solid var(--border);
+    border-radius: 16px; backdrop-filter: blur(20px);
+    position: relative; overflow: visible;
+  }
+  .tl-dot {
+    position: absolute; top: 50%; right: -1.6rem;
+    width: 12px; height: 12px;
+    background: var(--cyan); border-radius: 50%;
+    transform: translateY(-50%);
+    box-shadow: 0 0 12px var(--cyan);
+  }
+  .timeline-item:nth-child(even) .tl-dot {
+    right: auto; left: -1.6rem;
+  }
+  .tl-year {
+    font-family: 'Orbitron', sans-serif; font-size: .7rem;
+    color: var(--gold); letter-spacing: .2em; margin-bottom: .5rem;
+  }
+  .tl-event { font-size: 1rem; font-weight: 600; margin-bottom: .4rem; }
+  .tl-detail { font-size: .85rem; color: rgba(255,255,255,.5); line-height: 1.6; }
+  .tl-emoji { font-size: 1.5rem; margin-bottom: .5rem; }
+
+  /* ── COUNTER SECTION ── */
+  #counter-section {
+    padding: 6rem 2rem;
+    text-align: center;
+  }
+  .counter-grid {
+    max-width: 900px; margin: 4rem auto 0;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 2rem;
+  }
+  .counter-item {
+    background: var(--glass); border: 1px solid var(--border);
+    border-radius: 20px; padding: 2.5rem 1.5rem;
+    backdrop-filter: blur(20px);
+    position: relative; overflow: hidden;
+    opacity: 0; transform: translateY(30px);
+    transition: opacity .6s, transform .6s;
+  }
+  .counter-item.visible { opacity: 1; transform: none; }
+  .counter-item::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), var(--pink), var(--cyan));
+  }
+  .counter-num {
+    font-family: 'Orbitron', sans-serif; font-size: 2.8rem; font-weight: 900;
+    background: linear-gradient(135deg, var(--gold), var(--cyan));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1;
+  }
+  .counter-label {
+    font-size: .8rem; color: rgba(255,255,255,.5);
+    letter-spacing: .1em; text-transform: uppercase; margin-top: .5rem;
+  }
+  .counter-icon { font-size: 2rem; margin-bottom: .8rem; }
+
+  /* ── WAVE DIVIDER ── */
+  .wave-divider {
+    width: 100%; overflow: hidden; line-height: 0; z-index: 2; position: relative;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative; z-index: 2;
+    padding: 6rem 2rem 3rem;
+    text-align: center;
+    background: linear-gradient(180deg, transparent, rgba(155,48,255,.08));
+    border-top: 1px solid var(--border);
+  }
+  .footer-star {
+    font-size: 3rem; margin-bottom: 1.5rem;
+    display: inline-block;
+    animation: spinStar 8s linear infinite;
+  }
+  @keyframes spinStar {
+    from { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.2); }
+    to { transform: rotate(360deg) scale(1); }
+  }
+  .footer-title {
+    font-family: 'Orbitron', sans-serif; font-size: 1.5rem;
+    font-weight: 700; margin-bottom: .8rem;
+    background: linear-gradient(90deg, var(--gold), var(--pink), var(--cyan));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .footer-sub {
+    font-size: .9rem; color: rgba(255,255,255,.4); max-width: 400px;
+    margin: 0 auto 2.5rem; line-height: 1.7;
+  }
+  .footer-emojis {
+    display: flex; gap: 1rem; justify-content: center;
+    font-size: 1.8rem; margin-bottom: 3rem;
+  }
+  .footer-emojis span {
+    display: inline-block;
+    animation: floatSticker 4s ease-in-out infinite;
+  }
+  .footer-emojis span:nth-child(1) { animation-delay: 0s; }
+  .footer-emojis span:nth-child(2) { animation-delay: .3s; }
+  .footer-emojis span:nth-child(3) { animation-delay: .6s; }
+  .footer-emojis span:nth-child(4) { animation-delay: .9s; }
+  .footer-emojis span:nth-child(5) { animation-delay: 1.2s; }
+  .footer-copy {
+    font-family: 'Space Mono', monospace; font-size: .7rem;
+    color: rgba(255,255,255,.2); letter-spacing: .1em;
+    border-top: 1px solid var(--border); padding-top: 2rem; margin-top: 2rem;
+  }
+
+  /* ── PARTICLE BURST ── */
+  .burst {
+    position: fixed; pointer-events: none; z-index: 9000;
+  }
+  .burst-particle {
+    position: absolute; width: 6px; height: 6px; border-radius: 50%;
+    pointer-events: none;
+    animation: burstFly .8s forwards;
+  }
+  @keyframes burstFly {
+    0% { opacity: 1; transform: translate(0,0) scale(1); }
+    100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0); }
+  }
+
+  /* ── KEYFRAMES ── */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* ── GLOW SCAN LINE ── */
+  .scan-line {
+    position: fixed; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    z-index: 9997; pointer-events: none;
+    animation: scanDown 8s ease-in-out infinite;
+    opacity: .15;
+  }
+  @keyframes scanDown {
+    0% { top: -10px; }
+    100% { top: 100vh; }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    .timeline-line { left: 20px; }
+    .timeline-item { grid-template-columns: 1fr; gap: 0; padding-left: 3rem; }
+    .timeline-item:nth-child(even) .tl-content,
+    .timeline-item:nth-child(even) .tl-spacer { order: unset; text-align: left; }
+    .tl-dot { right: auto; left: -1.6rem !important; }
+    .tl-spacer { display: none; }
+    .tl-content { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Cursor -->
+<div id="cursor"></div>
+<div id="cursor-trail"></div>
+<div class="scan-line"></div>
+
+<!-- BG Canvas (Three.js star field) -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">BFD / 2025</div>
+  <ul class="nav-links">
+    <li><a href="#quotes">Bonds</a></li>
+    <li><a href="#vault">Memories</a></li>
+    <li><a href="#timeline">Journey</a></li>
+    <li><a href="#counter-section">Facts</a></li>
+  </ul>
+  <div class="nav-date">June 08 · Best Friend Day</div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+
+  <!-- Floating stickers -->
+  <div class="sticker s1">💫</div>
+  <div class="sticker s2">🌟</div>
+  <div class="sticker s3">💖</div>
+  <div class="sticker s4">✨</div>
+  <div class="sticker s5">🔮</div>
+  <div class="sticker s6">🌌</div>
+
+  <div class="hero-badge"><span>✦</span> June 8 · Best Friend Day 2025 <span>✦</span></div>
+  <h1 class="hero-title">
+    <span class="line1">Beyond the</span>
+    <span class="line2">Stars</span>
+  </h1>
+  <p class="hero-sub">In a universe of infinite souls, you found the one that makes every moment feel like coming home. This is for the friend who is everything.</p>
+  <div class="hero-cta">
+    <a href="#quotes" class="btn-primary">✦ Celebrate Now</a>
+    <a href="#vault" class="btn-ghost">↳ Explore Memories</a>
+  </div>
+
+  <div class="scroll-hint">
+    <div class="scroll-dot"></div>
+    Scroll to explore
+  </div>
+</section>
+
+<!-- ══ ORBIT ══ -->
+<section id="orbit">
+  <div class="section-label">// The Bond</div>
+  <h2 class="section-title">Two Stars,<br><em>One Constellation</em></h2>
+  <canvas id="orbit-canvas"></canvas>
+  <p style="max-width:500px;color:rgba(255,255,255,.5);line-height:1.8;font-size:.95rem">
+    Like celestial bodies locked in perfect orbit — you pull each other through every dark night and celebrate every brilliant dawn.
+  </p>
+</section>
+
+<!-- ══ QUOTES ══ -->
+<section id="quotes">
+  <div style="text-align:center">
+    <div class="section-label">// Frequencies of Friendship</div>
+    <h2 class="section-title">Words That<br><em>Resonate</em></h2>
+  </div>
+  <div class="quotes-grid">
+    <div class="quote-card">
+      <div class="quote-emoji">🌌</div>
+      <div class="quote-accent">"</div>
+      <p class="quote-text">A best friend is someone who knows the song in your heart and can sing it back to you when you've forgotten the words.</p>
+      <div class="quote-author">— Donna Roberts</div>
+    </div>
+    <div class="quote-card" style="transition-delay:.1s">
+      <div class="quote-emoji">💫</div>
+      <div class="quote-accent">"</div>
+      <p class="quote-text">Friendship is born at the moment one person says to another: "What! You too? I thought I was the only one."</p>
+      <div class="quote-author">— C.S. Lewis</div>
+    </div>
+    <div class="quote-card" style="transition-delay:.2s">
+      <div class="quote-emoji">🔮</div>
+      <div class="quote-accent">"</div>
+      <p class="quote-text">A real friend is one who walks in when the rest of the world walks out. They're your universe in human form.</p>
+      <div class="quote-author">— Walter Winchell</div>
+    </div>
+    <div class="quote-card" style="transition-delay:.3s">
+      <div class="quote-emoji">⚡</div>
+      <div class="quote-accent">"</div>
+      <p class="quote-text">Rare as is true love, true friendship is rarer. It's a galaxy all its own — infinite, luminous, and yours.</p>
+      <div class="quote-author">— Jean de La Fontaine</div>
+    </div>
+    <div class="quote-card" style="transition-delay:.4s">
+      <div class="quote-emoji">🌟</div>
+      <div class="quote-accent">"</div>
+      <p class="quote-text">In the cookie of life, friends are the chocolate chips. Without them, everything is just plain and a little bit sad.</p>
+      <div class="quote-author">— Salma Hayek</div>
+    </div>
+    <div class="quote-card" style="transition-delay:.5s">
+      <div class="quote-emoji">💖</div>
+      <div class="quote-accent">"</div>
+      <p class="quote-text">The greatest gift of life is friendship, and I have received it. To have one true friend is to have everything.</p>
+      <div class="quote-author">— Hubert H. Humphrey</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ VAULT (flip cards) ══ -->
+<section id="vault">
+  <div class="section-label">// Memory Archive</div>
+  <h2 class="section-title" style="text-align:center">The<br><em>Friendship Vault</em></h2>
+  <p style="max-width:500px;margin:.8rem auto 0;color:rgba(255,255,255,.5);line-height:1.8;font-size:.9rem;text-align:center">Hover each card to unlock a secret message</p>
+  <div class="vault-grid">
+    <div class="vault-card">
+      <div class="vault-card-inner">
+        <div class="vault-card-front">
+          <div class="vault-icon">🚀</div>
+          <div class="vault-title">Adventures</div>
+          <div class="vault-desc">Every journey is epic when you're together</div>
+        </div>
+        <div class="vault-card-back">
+          <div class="vault-back-text">"The best adventures are the ones we stumble into side by side — no map, no plan, just us against the world."</div>
+        </div>
+      </div>
+    </div>
+    <div class="vault-card" style="transition-delay:.1s">
+      <div class="vault-card-inner">
+        <div class="vault-card-front">
+          <div class="vault-icon">🎭</div>
+          <div class="vault-title">Laughter</div>
+          <div class="vault-desc">Inside jokes that only you two understand</div>
+        </div>
+        <div class="vault-card-back">
+          <div class="vault-back-text">"Some friendships are so deep, they develop their own language — one built entirely from shared memories and ridiculous moments."</div>
+        </div>
+      </div>
+    </div>
+    <div class="vault-card" style="transition-delay:.2s">
+      <div class="vault-card-inner">
+        <div class="vault-card-front">
+          <div class="vault-icon">🛡️</div>
+          <div class="vault-title">Protection</div>
+          <div class="vault-desc">A guardian in every storm</div>
+        </div>
+        <div class="vault-card-back">
+          <div class="vault-back-text">"A true friend is someone who reaches for your hand and touches your heart when the whole sky is falling."</div>
+        </div>
+      </div>
+    </div>
+    <div class="vault-card" style="transition-delay:.3s">
+      <div class="vault-card-inner">
+        <div class="vault-card-front">
+          <div class="vault-icon">🌙</div>
+          <div class="vault-title">Late Nights</div>
+          <div class="vault-desc">3am conversations that changed everything</div>
+        </div>
+        <div class="vault-card-back">
+          <div class="vault-back-text">"The best talks happen after midnight, when the world is quiet and two souls can finally hear each other clearly."</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ TIMELINE ══ -->
+<section id="timeline">
+  <div style="text-align:center">
+    <div class="section-label">// Friendship Timeline</div>
+    <h2 class="section-title">The <em>Milestones</em></h2>
+  </div>
+  <div class="timeline-wrap">
+    <div class="timeline-line"></div>
+    <div class="timeline-item">
+      <div class="tl-content">
+        <div class="tl-dot"></div>
+        <div class="tl-emoji">👋</div>
+        <div class="tl-year">The Beginning</div>
+        <div class="tl-event">First Hello</div>
+        <div class="tl-detail">That accidental meeting that felt anything but accidental. The universe's most perfect coincidence.</div>
+      </div>
+      <div class="tl-spacer"></div>
+    </div>
+    <div class="timeline-item">
+      <div class="tl-spacer"></div>
+      <div class="tl-content">
+        <div class="tl-dot"></div>
+        <div class="tl-emoji">😂</div>
+        <div class="tl-year">The Bond Forms</div>
+        <div class="tl-event">First Shared Laugh</div>
+        <div class="tl-detail">The moment you realized this person laughed at exactly the same things — a cosmic alignment.</div>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="tl-content">
+        <div class="tl-dot"></div>
+        <div class="tl-emoji">🌧️</div>
+        <div class="tl-year">The Test</div>
+        <div class="tl-event">Showing Up in the Hard Times</div>
+        <div class="tl-detail">When life got heavy, they didn't leave. That's when friendship became something sacred.</div>
+      </div>
+      <div class="tl-spacer"></div>
+    </div>
+    <div class="timeline-item">
+      <div class="tl-spacer"></div>
+      <div class="tl-content">
+        <div class="tl-dot"></div>
+        <div class="tl-emoji">🎉</div>
+        <div class="tl-year">The Celebration</div>
+        <div class="tl-event">Milestones Together</div>
+        <div class="tl-detail">Every win doubled in joy because they were there to celebrate alongside you.</div>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="tl-content">
+        <div class="tl-dot"></div>
+        <div class="tl-emoji">♾️</div>
+        <div class="tl-year">Forever</div>
+        <div class="tl-event">Written in the Stars</div>
+        <div class="tl-detail">Now and always — this friendship transcends time, space, and every version of yourself yet to come.</div>
+      </div>
+      <div class="tl-spacer"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ COUNTERS ══ -->
+<section id="counter-section">
+  <div class="section-label">// By the Numbers</div>
+  <h2 class="section-title" style="text-align:center">Friendship<br><em>Facts</em></h2>
+  <div class="counter-grid">
+    <div class="counter-item">
+      <div class="counter-icon">💬</div>
+      <div class="counter-num" data-target="10000">0</div>
+      <div class="counter-label">Messages Sent</div>
+    </div>
+    <div class="counter-item" style="transition-delay:.1s">
+      <div class="counter-icon">😂</div>
+      <div class="counter-num" data-target="5000">0</div>
+      <div class="counter-label">Laughs Shared</div>
+    </div>
+    <div class="counter-item" style="transition-delay:.2s">
+      <div class="counter-icon">🌙</div>
+      <div class="counter-num" data-target="365">0</div>
+      <div class="counter-label">Late Night Talks</div>
+    </div>
+    <div class="counter-item" style="transition-delay:.3s">
+      <div class="counter-icon">💖</div>
+      <div class="counter-num" data-target="1">0</div>
+      <div class="counter-label">Best Friend</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="footer-star">✦</div>
+  <div class="footer-title">Happy Best Friend Day</div>
+  <p class="footer-sub">To every person lucky enough to have a best friend — today is yours. Celebrate them. Tell them. Show them.</p>
+  <div class="footer-emojis">
+    <span>💫</span><span>🌟</span><span>💖</span><span>✨</span><span>🔮</span>
+  </div>
+  <a href="#hero" class="btn-primary" style="display:inline-flex">↑ Back to Top</a>
+  <div class="footer-copy">
+    BEST FRIEND DAY · JUNE 8, 2025 · MADE WITH ∞ LOVE
+  </div>
+</footer>
+
+<script>
+/* ══ CURSOR ══ */
+const cursor = document.getElementById('cursor');
+const trail = document.getElementById('cursor-trail');
+let mx=0,my=0;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx+'px'; cursor.style.top = my+'px';
+  trail.style.left = mx+'px'; trail.style.top = my+'px';
+});
+document.addEventListener('click', e => {
+  spawnBurst(e.clientX, e.clientY);
+});
+
+/* ══ BURST ON CLICK ══ */
+function spawnBurst(x, y) {
+  const colors = ['#FFD700','#FF2D78','#00F5FF','#9B30FF','#fff'];
+  const burst = document.createElement('div');
+  burst.className = 'burst';
+  burst.style.left = x+'px'; burst.style.top = y+'px';
+  for (let i=0; i<12; i++) {
+    const p = document.createElement('div');
+    p.className = 'burst-particle';
+    const angle = (i/12)*360;
+    const dist = 40 + Math.random()*40;
+    const dx = Math.cos(angle*Math.PI/180)*dist;
+    const dy = Math.sin(angle*Math.PI/180)*dist;
+    p.style.setProperty('--dx', dx+'px');
+    p.style.setProperty('--dy', dy+'px');
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.left = '-3px'; p.style.top = '-3px';
+    burst.appendChild(p);
+  }
+  document.body.appendChild(burst);
+  setTimeout(() => burst.remove(), 900);
+}
+
+/* ══ THREE.JS BG STARFIELD ══ */
+(function() {
+  const canvas = document.getElementById('bg-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 2000);
+  camera.position.z = 400;
+
+  // Stars
+  const starGeo = new THREE.BufferGeometry();
+  const starCount = 3000;
+  const positions = new Float32Array(starCount*3);
+  const colors = new Float32Array(starCount*3);
+  for(let i=0;i<starCount;i++){
+    positions[i*3]   = (Math.random()-0.5)*2000;
+    positions[i*3+1] = (Math.random()-0.5)*2000;
+    positions[i*3+2] = (Math.random()-0.5)*2000;
+    const c = Math.random();
+    if(c<0.3){ colors[i*3]=0;colors[i*3+1]=0.96;colors[i*3+2]=1; }
+    else if(c<0.5){ colors[i*3]=1;colors[i*3+1]=0.84;colors[i*3+2]=0; }
+    else if(c<0.65){ colors[i*3]=1;colors[i*3+1]=0.18;colors[i*3+2]=0.47; }
+    else { colors[i*3]=1;colors[i*3+1]=1;colors[i*3+2]=1; }
+  }
+  starGeo.setAttribute('position', new THREE.BufferAttribute(positions,3));
+  starGeo.setAttribute('color', new THREE.BufferAttribute(colors,3));
+  const starMat = new THREE.PointsMaterial({size:1.5,vertexColors:THREE.VertexColors,transparent:true,opacity:.8});
+  scene.add(new THREE.Points(starGeo,starMat));
+
+  // Nebula dust
+  const nebulaGeo = new THREE.BufferGeometry();
+  const nebulaCount = 300;
+  const np = new Float32Array(nebulaCount*3);
+  for(let i=0;i<nebulaCount;i++){
+    np[i*3]=(Math.random()-0.5)*1200;
+    np[i*3+1]=(Math.random()-0.5)*1200;
+    np[i*3+2]=(Math.random()-0.5)*600;
+  }
+  nebulaGeo.setAttribute('position',new THREE.BufferAttribute(np,3));
+  const nebulaMat = new THREE.PointsMaterial({size:4,color:0x9B30FF,transparent:true,opacity:.12});
+  scene.add(new THREE.Points(nebulaGeo,nebulaMat));
+
+  let mouseX=0,mouseY=0;
+  document.addEventListener('mousemove',e=>{
+    mouseX=(e.clientX/window.innerWidth-.5)*.3;
+    mouseY=(e.clientY/window.innerHeight-.5)*.3;
+  });
+
+  window.addEventListener('resize',()=>{
+    camera.aspect=window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth,window.innerHeight);
+  });
+
+  function animate(){
+    requestAnimationFrame(animate);
+    const t = Date.now()*0.00005;
+    camera.position.x += (mouseX*50 - camera.position.x)*0.02;
+    camera.position.y += (-mouseY*50 - camera.position.y)*0.02;
+    camera.rotation.z = t*0.1;
+    starMat.opacity = .6 + Math.sin(t*10)*.1;
+    renderer.render(scene,camera);
+  }
+  animate();
+})();
+
+/* ══ HERO CANVAS — 3D DNA / HELIX ══ */
+(function(){
+  const canvas = document.getElementById('hero-canvas');
+  const hero = canvas.parentElement;
+  const getW = () => hero.offsetWidth  || window.innerWidth;
+  const getH = () => hero.offsetHeight || window.innerHeight;
+  const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(getW(), getH());
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, getW()/getH(), 0.1, 1000);
+  camera.position.set(0,0,6);
+
+  // Two intertwined rings / helix of friendship
+  const group = new THREE.Group();
+  scene.add(group);
+
+  function makeOrb(color, emissive){
+    return new THREE.Mesh(
+      new THREE.SphereGeometry(.12,16,16),
+      new THREE.MeshStandardMaterial({color,emissive,emissiveIntensity:.8,metalness:.9,roughness:.1})
+    );
+  }
+
+  const strand1 = [], strand2 = [];
+  const N = 30;
+  for(let i=0;i<N;i++){
+    const t = (i/N)*Math.PI*4;
+    const o1 = makeOrb(0xFFD700, 0xFF8C00);
+    o1.position.set(Math.cos(t)*1.8, (i/N)*6-3, Math.sin(t)*1.8);
+    group.add(o1); strand1.push(o1);
+
+    const o2 = makeOrb(0x00F5FF, 0x0080FF);
+    o2.position.set(Math.cos(t+Math.PI)*1.8, (i/N)*6-3, Math.sin(t+Math.PI)*1.8);
+    group.add(o2); strand2.push(o2);
+
+    // connector
+    if(i%4===0){
+      const pts = [o1.position.clone(), o2.position.clone()];
+      const lg = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(pts),
+        new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:.2})
+      );
+      group.add(lg);
+    }
+  }
+
+  const ambLight = new THREE.AmbientLight(0xffffff,.4);
+  scene.add(ambLight);
+  const pLight1 = new THREE.PointLight(0xFFD700,2,20);
+  pLight1.position.set(3,3,3); scene.add(pLight1);
+  const pLight2 = new THREE.PointLight(0x00F5FF,2,20);
+  pLight2.position.set(-3,-3,3); scene.add(pLight2);
+
+  let mouseX=0,mouseY=0;
+  document.addEventListener('mousemove',e=>{
+    mouseX=(e.clientX/window.innerWidth-.5)*2;
+    mouseY=(e.clientY/window.innerHeight-.5)*2;
+  });
+
+  window.addEventListener('resize',()=>{
+    const w=getW(), h=getH();
+    camera.aspect=w/h; camera.updateProjectionMatrix();
+    renderer.setSize(w,h);
+  });
+
+  function animate(){
+    requestAnimationFrame(animate);
+    const t=Date.now()*.0005;
+    group.rotation.y = t*.4 + mouseX*.3;
+    group.rotation.x = mouseY*.15;
+    group.position.y = Math.sin(t)*.3;
+    pLight1.position.set(Math.cos(t)*4, Math.sin(t*1.3)*3, 3);
+    pLight2.position.set(Math.cos(t+Math.PI)*4, Math.sin(t*1.3+Math.PI)*3, 3);
+    renderer.render(scene,camera);
+  }
+  animate();
+})();
+
+/* ══ ORBIT CANVAS — Two orbiting hearts ══ */
+(function(){
+  const canvas = document.getElementById('orbit-canvas');
+  const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
+  const getSz = () => canvas.offsetWidth || 500;
+  let sz = getSz();
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(sz, sz);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
+  camera.position.set(0,2,8);
+  camera.lookAt(0,0,0);
+
+  const ambLight = new THREE.AmbientLight(0xffffff,.3);
+  scene.add(ambLight);
+  const pL1 = new THREE.PointLight(0xFFD700,3,20); scene.add(pL1);
+  const pL2 = new THREE.PointLight(0xFF2D78,3,20); scene.add(pL2);
+  const pL3 = new THREE.PointLight(0x00F5FF,2,20); pL3.position.set(0,5,5); scene.add(pL3);
+
+  // Central sun
+  const sun = new THREE.Mesh(
+    new THREE.SphereGeometry(.8,32,32),
+    new THREE.MeshStandardMaterial({color:0xFFD700,emissive:0xFF8C00,emissiveIntensity:1.5,metalness:.8,roughness:.1})
+  );
+  scene.add(sun);
+
+  // Glow ring around sun
+  const ring = new THREE.Mesh(
+    new THREE.TorusGeometry(1.2,.03,16,100),
+    new THREE.MeshBasicMaterial({color:0xFFD700,transparent:true,opacity:.3})
+  );
+  ring.rotation.x = Math.PI/2;
+  scene.add(ring);
+
+  // Orbiting planets (friends)
+  const p1 = new THREE.Mesh(
+    new THREE.SphereGeometry(.45,32,32),
+    new THREE.MeshStandardMaterial({color:0xFF2D78,emissive:0xFF2D78,emissiveIntensity:.8,metalness:.9,roughness:.1})
+  );
+  const p2 = new THREE.Mesh(
+    new THREE.SphereGeometry(.4,32,32),
+    new THREE.MeshStandardMaterial({color:0x00F5FF,emissive:0x00BFFF,emissiveIntensity:.8,metalness:.9,roughness:.1})
+  );
+  scene.add(p1); scene.add(p2);
+
+  // Orbit trails
+  function makeOrbitRing(r, color){
+    const pts = [];
+    for(let i=0;i<=128;i++) pts.push(new THREE.Vector3(Math.cos(i/128*Math.PI*2)*r,0,Math.sin(i/128*Math.PI*2)*r));
+    return new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints(pts),
+      new THREE.LineBasicMaterial({color,transparent:true,opacity:.15})
+    );
+  }
+  scene.add(makeOrbitRing(3.2, 0xFF2D78));
+  scene.add(makeOrbitRing(4.5, 0x00F5FF));
+
+  // Particle ring
+  const pGeo = new THREE.BufferGeometry();
+  const pPos = new Float32Array(200*3);
+  for(let i=0;i<200;i++){
+    const a=Math.random()*Math.PI*2, r=2+Math.random()*3;
+    pPos[i*3]=Math.cos(a)*r; pPos[i*3+1]=(Math.random()-.5)*.5; pPos[i*3+2]=Math.sin(a)*r;
+  }
+  pGeo.setAttribute('position',new THREE.BufferAttribute(pPos,3));
+  const pMat = new THREE.PointsMaterial({size:.06,color:0xffffff,transparent:true,opacity:.4});
+  scene.add(new THREE.Points(pGeo,pMat));
+
+  new ResizeObserver(()=>{
+    const s = getSz();
+    renderer.setSize(s,s);
+  }).observe(canvas);
+
+  function animate(){
+    requestAnimationFrame(animate);
+    const t=Date.now()*.0008;
+    // Pulsing sun
+    const pulse=1+Math.sin(t*3)*.05;
+    sun.scale.setScalar(pulse);
+    // Orbits
+    p1.position.set(Math.cos(t)*3.2, Math.sin(t*.7)*.3, Math.sin(t)*3.2);
+    p2.position.set(Math.cos(t+Math.PI*1.2)*4.5, Math.sin(t*.5)*.2, Math.sin(t+Math.PI*1.2)*4.5);
+    p1.rotation.y += .02; p2.rotation.y -= .015;
+    pL1.position.copy(p1.position);
+    pL2.position.copy(p2.position);
+    ring.rotation.z += .005;
+    renderer.render(scene,camera);
+  }
+  animate();
+})();
+
+/* ══ SCROLL REVEAL ══ */
+const revealEls = document.querySelectorAll('.section-label,.section-title,.quote-card,.vault-card,.counter-item,.timeline-item');
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+},{threshold:.15});
+revealEls.forEach(el=>io.observe(el));
+
+/* ══ COUNTER ANIMATION ══ */
+function animateCounter(el){
+  const target = parseInt(el.dataset.target);
+  const dur = 2000;
+  const start = Date.now();
+  function tick(){
+    const p = Math.min((Date.now()-start)/dur,1);
+    const ease = 1-Math.pow(1-p,3);
+    el.textContent = Math.floor(ease*target).toLocaleString() + (target === 1 ? '' : '+');
+    if(p<1) requestAnimationFrame(tick);
+    else el.textContent = target === 1 ? '1' : target.toLocaleString() + '+';
+  }
+  tick();
+}
+const cIo = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const num = e.target.querySelector('.counter-num');
+      if(num && !num.dataset.animated){
+        num.dataset.animated='1';
+        animateCounter(num);
+      }
+    }
+  });
+},{threshold:.5});
+document.querySelectorAll('.counter-item').forEach(el=>cIo.observe(el));
+
+/* ══ 3D TILT on quote cards ══ */
+document.querySelectorAll('.quote-card').forEach(card=>{
+  card.addEventListener('mousemove',e=>{
+    const r=card.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-.5;
+    const y=(e.clientY-r.top)/r.height-.5;
+    card.style.transform=`perspective(600px) rotateY(${x*20}deg) rotateX(${-y*20}deg) translateZ(8px)`;
+    card.style.boxShadow=`${-x*20}px ${y*20}px 40px rgba(0,0,0,.3), 0 0 30px rgba(0,245,255,.1)`;
+  });
+  card.addEventListener('mouseleave',()=>{
+    card.style.transform='perspective(600px) rotateY(0) rotateX(0) translateZ(0)';
+    card.style.boxShadow='';
+  });
+});
+</script>
+</body>
+</html>
