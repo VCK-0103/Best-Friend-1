@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Best Friend Day — Beyond Time</title>
+<style>
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#020818;
+    color:white;
+    overflow-x:hidden;
+}
+.hero{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    background:radial-gradient(circle at center,#0b1f4d,#020818);
+}
+h1{
+    font-size:clamp(3rem,10vw,7rem);
+    margin:0;
+}
+.cyan{color:#00f5ff;}
+.pink{color:#ff2d78;}
+.btn{
+    padding:16px 32px;
+    border:1px solid #00f5ff;
+    color:#00f5ff;
+    text-decoration:none;
+    border-radius:8px;
+}
+section{padding:80px 20px;max-width:1100px;margin:auto;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;}
+.card{
+    padding:24px;
+    border:1px solid rgba(0,245,255,.2);
+    border-radius:12px;
+    background:rgba(255,255,255,.03);
+}
+button{
+    padding:16px 32px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+    <p>JUNE 08 · BEST FRIEND DAY</p>
+    <h1><span class="cyan">BEST</span> <span class="pink">FRIEND</span></h1>
+    <h2>∞ DAY ∞</h2>
+    <a class="btn" href="#pledge">Celebrate Now</a>
+</div>
+
+<section>
+    <h2>Friendship Metrics</h2>
+    <div class="grid">
+        <div class="card"><h3>🌍 8.1B+</h3><p>Friends On Earth</p></div>
+        <div class="card"><h3>💬 4</h3><p>True Best Friends (avg)</p></div>
+        <div class="card"><h3>⚡ 200</h3><p>Hours To Form Deep Bond</p></div>
+        <div class="card"><h3>∞ 100%</h3><p>Worth Celebrating</p></div>
+    </div>
+</section>
+
+<section id="pledge">
+    <h2>Take The Eternal Pledge</h2>
+    <p>I pledge to support, celebrate, and stand beside my friends through every chapter of life.</p>
+    <button id="pledgeBtn">TAKE THE PLEDGE</button>
+    <p><strong id="count">2,847,392</strong> friends pledged today</p>
+</section>
+
+<script>
+let pledged = localStorage.getItem('pledged') === 'true';
+let count = Number(localStorage.getItem('pledgeCount') || 2847392);
+
+const btn = document.getElementById('pledgeBtn');
+const counter = document.getElementById('count');
+
+function updateUI(){
+    counter.textContent = count.toLocaleString();
+    if(pledged){
+        btn.textContent = '✓ PLEDGED — BOND ETERNAL';
+    }
+}
+updateUI();
+
+btn.addEventListener('click',()=>{
+    if(pledged) return;
+    pledged = true;
+    count++;
+    localStorage.setItem('pledged','true');
+    localStorage.setItem('pledgeCount',count);
+    updateUI();
+});
+</script>
+
+</body>
+</html>
